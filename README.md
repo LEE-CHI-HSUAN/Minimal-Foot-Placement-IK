@@ -6,7 +6,7 @@ This Unity package provides simple foot placement IK scripts that are easy for b
 
 1. Open Package Manager in a Unity Editor.
 2. Click the `+` icon on the upper left to open a drop-down list.
-3. Selete **Install package from git URL** and paste the URL.
+3. Select **Install package from git URL** and paste the URL.
 
 # Documentation
 
