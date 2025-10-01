@@ -1,0 +1,20 @@
+{
+  "name": "com.james911029.minimal.foot.ik",
+  "version": "1.0.0",
+  "displayName": "Minimal Foot IK",
+  "description": "This package provides simple foot placement IK scripts that are easy for beginners to learn and modify.",
+  "unity": "2022.1",
+  "documentationUrl": "https://www.notion.so/Unity-Foot-IK-26a92303a69a80d98847f126c5c141b3#27b92303a69a80cfbd57c058f16c4854",
+  "dependencies": {
+    "com.unity.animation.rigging": "1.3.0"
+  },
+  "keywords": [
+    "Animation",
+    "Rigging",
+    "Constraints"
+  ],
+  "author": {
+    "name": "James Lee",
+    "email": "jameslee911029@gmail.com"
+  }
+}
