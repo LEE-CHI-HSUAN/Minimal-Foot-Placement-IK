@@ -108,7 +108,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
     [SerializeField] bool enableFootLifting = true;
     [SerializeField, Range(0, 1)] float smoothRate = 0.5f;
 
-    void Start()
+    void Awake()
     {
         leftFootConstraint.Init(transform.rotation);
         rightFootConstraint.Init(transform.rotation);

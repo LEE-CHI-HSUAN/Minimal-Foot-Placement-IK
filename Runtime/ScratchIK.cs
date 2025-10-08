@@ -74,7 +74,7 @@ public class ScratchIK : BaseFootIK<TwoBoneConstraint>
     [SerializeField] TwoBoneConstraint leftFootConstraint;
     [SerializeField] TwoBoneConstraint rightFootConstraint;
 
-    void Start()
+    void Awake()
     {
         leftFootConstraint.Init(transform.rotation);
         rightFootConstraint.Init(transform.rotation);

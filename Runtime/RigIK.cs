@@ -7,7 +7,7 @@ public class RigIK : BaseFootIK<TwoBoneIKConstraint>
     [SerializeField] TwoBoneIKConstraint rightFootConstraint;
 
 #if UNITY_EDITOR
-    void Start()
+    void Awake()
     {
         gizmosCaches.Add(leftFootConstraint, new GizmosCache());
         gizmosCaches.Add(rightFootConstraint, new GizmosCache());
