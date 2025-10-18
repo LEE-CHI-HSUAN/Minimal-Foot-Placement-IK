@@ -55,20 +55,23 @@ public abstract class BaseFootIK<T> : MonoBehaviour
                 return;
             }
 
+            // hit position
             Vector3 sphereCenter = cache.groundPosition + sphereRadius * cache.groundNormal;
             Gizmos.DrawWireSphere(sphereCenter, sphereRadius);
-
-            // forward vector projection
-            Handles.color = Color.red;
-            Handles.DrawLine(cache.groundPosition, cache.groundPosition + cache.forward / 3, 0.2f);
-            Handles.color = Color.blue;
-            Handles.DrawLine(cache.groundPosition, cache.groundPosition + transform.forward / 3, 0.2f);
-            Handles.DrawDottedLine(cache.groundPosition + transform.forward / 3, cache.groundPosition + cache.forward / 3, 5f);
 
             // tangent plane
             Handles.color = Color.yellow;
             Handles.DrawLine(cache.groundPosition, cache.groundPosition + cache.groundNormal / 3, 0.2f);
             Handles.DrawWireDisc(cache.groundPosition, cache.groundNormal, 0.3f, 0.2f);
+
+            // forward vector projection
+            Vector3 projectionEnd = cache.groundPosition + cache.forwardProjection / 3;
+            Vector3 footTip = cache.groundPosition + cache.footForward / 3;
+            Handles.color = Color.red;
+            Handles.DrawLine(cache.groundPosition, projectionEnd, 0.2f);
+            Handles.color = Color.blue;
+            Handles.DrawLine(cache.groundPosition, footTip, 0.2f);
+            Handles.DrawDottedLine(footTip, projectionEnd, 5f);
         }
     }
 #endif
