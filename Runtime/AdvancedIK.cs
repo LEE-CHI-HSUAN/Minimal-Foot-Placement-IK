@@ -22,6 +22,15 @@ namespace Advanced
         // temporary data
         [HideInInspector] public float groundHeight; // used in body height adjustment
 
+        public Vector3 TipForward
+        {
+            get
+            {
+                Quaternion rotation = tip.rotation * Quaternion.Inverse(rotationOffset);
+                return rotation * Vector3.forward;
+            }
+        }
+
         public void Init(Quaternion bodyRotation)
         {
             // pre-compute constants
@@ -58,7 +67,7 @@ namespace Advanced
         }
 
         // move the limb to the IK target
-        public void ApplyIK()
+        public void ApplyIK(bool controlRotation = true)
         {
             // try to calculate the inner angle
             float thighAngle = GetThighAngle();
@@ -66,6 +75,8 @@ namespace Advanced
             {
                 return;
             }
+
+            Quaternion originalTipRotation = tip.rotation;
 
             // calculate the normal vector of the plane spanned by hint, target, root
             Vector3 hintDirection = (hint.position - root.position).normalized;
@@ -82,8 +93,16 @@ namespace Advanced
             Vector3 newCalfDirection = (smoothedTarget.position - mid.position).normalized;
             mid.rotation = Quaternion.FromToRotation(currentCalfDirection, newCalfDirection) * mid.rotation;
 
-            // rotate the tip corrected by the offset
-            tip.rotation = smoothedTarget.rotation * rotationOffset;
+            if (controlRotation)
+            {
+                // rotate the tip, corrected by the offset
+                tip.rotation = smoothedTarget.rotation * rotationOffset;
+            }
+            else
+            {
+                // restore original global rotation
+                tip.rotation = originalTipRotation;
+            }
         }
 
         // lerp smoothedTarget towards target
@@ -113,6 +132,9 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
     [SerializeField, Range(0, 1)] float smoothRate = 0.5f;
     [Tooltip("Snap the body to the ground.")]
     [SerializeField] bool adaptiveBodyHeight = true;
+    [Tooltip("If disabled, the rotation of the foot will follow animation clips.")]
+    [SerializeField] bool controlRotation = true;
+    [SerializeField] float footLength = 0.2f;
 
     private CharacterController characterController; // can be replaced with CapsuleCollider
     private Vector3 originalColliderCenter;
@@ -179,20 +201,41 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
         }
         footConstraint.groundHeight = groundPosition.y;
 
+        // Calculate the distance between ankle and ground
+        float dynamicAnkleOffset = ankleOffset;
+        if (!controlRotation)
+        {
+            Vector3 footForward = footConstraint.TipForward;
+            Vector3 groundForward = Vector3.ProjectOnPlane(footForward, groundNormal);
+            Vector3 axis = Vector3.Cross(groundForward, footForward);
+            float radius = Mathf.Deg2Rad * Vector3.SignedAngle(groundForward, footForward, axis);
+
+            dynamicAnkleOffset = Mathf.Cos(radius) * ankleOffset + Mathf.Sin(radius) * footLength;
+        }
+
         // calculate position
-        float verticalOffset = (ankleOffset - sphereRadius) / groundNormal.y;
+        float verticalOffset = (dynamicAnkleOffset - sphereRadius) / groundNormal.y;
         Vector3 SphereCenter = groundPosition + sphereRadius * groundNormal;
         Vector3 IK_position = SphereCenter + new Vector3(0, verticalOffset, 0);
 
+        // set the IK target
+        Vector3 forward = Vector3.zero;
+        if (controlRotation)
+        {
         // calculate rotation
-        Vector3 forward = Vector3.ProjectOnPlane(transform.forward, groundNormal);
+            forward = Vector3.ProjectOnPlane(footConstraint.TipForward, groundNormal);
         Quaternion IK_rotation = Quaternion.LookRotation(forward, groundNormal);
+
+            footConstraint.target.SetPositionAndRotation(IK_position, IK_rotation);
+        }
+        else
+        {
+            footConstraint.target.position = IK_position;
+        }
+
 #if UNITY_EDITOR
         gizmosCaches[footConstraint].PopulateHit(groundPosition, groundNormal, forward);
 #endif
-
-        // set the IK target
-        footConstraint.target.SetPositionAndRotation(IK_position, IK_rotation);
     }
 
     void Placelimb(TwoBoneConstraint footConstraint)
@@ -205,7 +248,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
         }
 
         footConstraint.SmoothTarget(smoothRate);
-        footConstraint.ApplyIK();
+        footConstraint.ApplyIK(controlRotation);
     }
 
     private float smoothHeightOffset = 0f;
