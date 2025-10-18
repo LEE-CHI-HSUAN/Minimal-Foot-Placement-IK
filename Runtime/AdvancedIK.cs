@@ -13,10 +13,14 @@ namespace Advanced
         public Transform target;
         public Transform hint;
 
+        // private variables
         float legLength; // pre-computed constants
         float c2_sub_a2, c_mul_2; // pre-computed constants for law of cosines
         Quaternion rotationOffset;
         Transform smoothedTarget; // aka the last tranform of the tip
+
+        // temporary data
+        [HideInInspector] public float groundHeight; // used in body height adjustment
 
         public void Init(Quaternion bodyRotation)
         {
@@ -173,6 +177,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
             footConstraint.ResetTarget();
             return;
         }
+        footConstraint.groundHeight = groundPosition.y;
 
         // calculate position
         float verticalOffset = (ankleOffset - sphereRadius) / groundNormal.y;
@@ -207,8 +212,8 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
     void AdjustBodyHeight()
     {
         float deltaHeight = Mathf.Abs(
-            leftFootConstraint.target.position.y
-            - rightFootConstraint.target.position.y
+            leftFootConstraint.groundHeight
+            - rightFootConstraint.groundHeight
         );
 
         float nextSmoothHeightOffset = Mathf.Lerp(smoothHeightOffset, deltaHeight, Time.deltaTime);
