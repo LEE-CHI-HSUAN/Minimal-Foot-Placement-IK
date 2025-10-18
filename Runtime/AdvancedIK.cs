@@ -13,10 +13,14 @@ namespace Advanced
         public Transform target;
         public Transform hint;
 
+        // private variables
         float legLength; // pre-computed constants
         float c2_sub_a2, c_mul_2; // pre-computed constants for law of cosines
         Quaternion rotationOffset;
         Transform smoothedTarget; // aka the last tranform of the tip
+
+        // temporary data
+        [HideInInspector] public float groundHeight; // used in body height adjustment
 
         public void Init(Quaternion bodyRotation)
         {
@@ -107,11 +111,27 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
     [Header("Advanced Setting")]
     [SerializeField] bool enableFootLifting = true;
     [SerializeField, Range(0, 1)] float smoothRate = 0.5f;
+    [Tooltip("Snap the body to the ground.")]
+    [SerializeField] bool adaptiveBodyHeight = true;
 
-    void Start()
+    private CharacterController characterController; // can be replaced with CapsuleCollider
+    private Vector3 originalColliderCenter;
+
+    void Awake()
     {
         leftFootConstraint.Init(transform.rotation);
         rightFootConstraint.Init(transform.rotation);
+
+        characterController = GetComponent<CharacterController>();
+        if (characterController)
+        {
+            originalColliderCenter = characterController.center;
+        }
+        else
+        {
+            adaptiveBodyHeight = false;
+            Debug.LogWarning("No CharacterController found. Disabling adaptive collider height.");
+        }
 
 #if UNITY_EDITOR
         gizmosCaches.Add(leftFootConstraint, new GizmosCache());
@@ -138,6 +158,11 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
 
         Placelimb(leftFootConstraint);
         Placelimb(rightFootConstraint);
+
+        if (adaptiveBodyHeight)
+        {
+            AdjustBodyHeight();
+        }
     }
 
     override protected void ResolveIKTarget(TwoBoneConstraint footConstraint)
@@ -152,6 +177,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
             footConstraint.ResetTarget();
             return;
         }
+        footConstraint.groundHeight = groundPosition.y;
 
         // calculate position
         float verticalOffset = (ankleOffset - sphereRadius) / groundNormal.y;
@@ -180,5 +206,21 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
 
         footConstraint.SmoothTarget(smoothRate);
         footConstraint.ApplyIK();
+    }
+
+    private float smoothHeightOffset = 0f;
+    void AdjustBodyHeight()
+    {
+        float deltaHeight = Mathf.Abs(
+            leftFootConstraint.groundHeight
+            - rightFootConstraint.groundHeight
+        );
+
+        float nextSmoothHeightOffset = Mathf.Lerp(smoothHeightOffset, deltaHeight, Time.deltaTime);
+        float deltaHeightOffset = smoothHeightOffset - nextSmoothHeightOffset;
+        smoothHeightOffset = nextSmoothHeightOffset;
+
+        characterController.center = originalColliderCenter + new Vector3(0, smoothHeightOffset, 0);
+        transform.position += new Vector3(0, deltaHeightOffset, 0);
     }
 }

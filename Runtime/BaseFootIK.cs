@@ -59,7 +59,7 @@ public abstract class BaseFootIK<T> : MonoBehaviour
             Gizmos.DrawWireSphere(sphereCenter, sphereRadius);
 
             // forward vector projection
-            Handles.color = Color.deepSkyBlue;
+            Handles.color = Color.red;
             Handles.DrawLine(cache.groundPosition, cache.groundPosition + cache.forward / 3, 0.2f);
             Handles.color = Color.blue;
             Handles.DrawLine(cache.groundPosition, cache.groundPosition + transform.forward / 3, 0.2f);
