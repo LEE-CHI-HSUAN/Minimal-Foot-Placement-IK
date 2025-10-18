@@ -234,7 +234,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
         }
 
 #if UNITY_EDITOR
-        gizmosCaches[footConstraint].PopulateHit(groundPosition, groundNormal, forward);
+        gizmosCaches[footConstraint].PopulateHit(groundPosition, groundNormal, footConstraint.TipForward, forward);
 #endif
     }
 

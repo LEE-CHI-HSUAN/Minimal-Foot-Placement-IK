@@ -41,7 +41,7 @@ public class AnimatorIK : BaseFootIK<AvatarIKGoal>
 
 #if UNITY_EDITOR
         gizmosCaches[foot].PopulateRaycast(footPosition);
-        gizmosCaches[foot].PopulateHit(groundPosition, groundNormal, forward);
+        gizmosCaches[foot].PopulateHit(groundPosition, groundNormal, transform.forward, forward);
 #endif
     }
 }

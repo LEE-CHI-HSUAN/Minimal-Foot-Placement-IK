@@ -41,7 +41,7 @@ public class RigIK : BaseFootIK<TwoBoneIKConstraint>
 
 #if UNITY_EDITOR
         gizmosCaches[footConstraint].PopulateRaycast(footPosition);
-        gizmosCaches[footConstraint].PopulateHit(groundPosition, groundNormal, forward);
+        gizmosCaches[footConstraint].PopulateHit(groundPosition, groundNormal, transform.forward, forward);
 #endif
     }
 }

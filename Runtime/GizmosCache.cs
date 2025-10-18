@@ -5,7 +5,7 @@ using UnityEngine;
 public class GizmosCache
 {
     public Vector3 footPosition;
-    public Vector3 groundPosition, groundNormal, forward;
+    public Vector3 groundPosition, groundNormal, footForward, forwardProjection;
     public bool hit = false;
 
     public void PopulateRaycast(Vector3 footPosition)
@@ -14,12 +14,13 @@ public class GizmosCache
         hit = false;
     }
 
-    public void PopulateHit(Vector3 position, Vector3 normal, Vector3 forward)
+    public void PopulateHit(Vector3 position, Vector3 normal, Vector3 footForward, Vector3 forwardProjection)
     {
         hit = true;
         groundPosition = position;
         groundNormal = normal;
-        this.forward = forward;
+        this.footForward = footForward;
+        this.forwardProjection = forwardProjection;
     }
 }
 
