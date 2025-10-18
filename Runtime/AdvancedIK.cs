@@ -130,8 +130,9 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
     [Header("Advanced Setting")]
     [SerializeField] bool enableFootLifting = true;
     [SerializeField, Range(0, 1)] float smoothRate = 0.5f;
-    [Tooltip("Snap the body to the ground.")]
-    [SerializeField] bool adaptiveBodyHeight = true;
+    [Tooltip("The power to snap the body to the ground.")]
+    [SerializeField, Range(0, 1.5f)] float adaptiveBodyHeight = 1;
+
     [Tooltip("If disabled, the rotation of the foot will follow animation clips.")]
     [SerializeField] bool controlRotation = true;
     [SerializeField] float footLength = 0.2f;
@@ -151,7 +152,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
         }
         else
         {
-            adaptiveBodyHeight = false;
+            adaptiveBodyHeight = 0f;
             Debug.LogWarning("No CharacterController found. Disabling adaptive collider height.");
         }
 
@@ -181,7 +182,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
         Placelimb(leftFootConstraint);
         Placelimb(rightFootConstraint);
 
-        if (adaptiveBodyHeight)
+        if (adaptiveBodyHeight > 0.1f)
         {
             AdjustBodyHeight();
         }
@@ -222,9 +223,9 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
         Vector3 forward = Vector3.zero;
         if (controlRotation)
         {
-        // calculate rotation
+            // calculate rotation
             forward = Vector3.ProjectOnPlane(footConstraint.TipForward, groundNormal);
-        Quaternion IK_rotation = Quaternion.LookRotation(forward, groundNormal);
+            Quaternion IK_rotation = Quaternion.LookRotation(forward, groundNormal);
 
             footConstraint.target.SetPositionAndRotation(IK_position, IK_rotation);
         }
@@ -257,7 +258,7 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
         float deltaHeight = Mathf.Abs(
             leftFootConstraint.groundHeight
             - rightFootConstraint.groundHeight
-        );
+        ) * adaptiveBodyHeight;
 
         float nextSmoothHeightOffset = Mathf.Lerp(smoothHeightOffset, deltaHeight, Time.deltaTime);
         float deltaHeightOffset = smoothHeightOffset - nextSmoothHeightOffset;
