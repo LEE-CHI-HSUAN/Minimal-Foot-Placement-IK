@@ -128,13 +128,13 @@ public class AdvancedIK : BaseFootIK<TwoBoneConstraint>
     [SerializeField] TwoBoneConstraint rightFootConstraint;
 
     [Header("Advanced Setting")]
-    [SerializeField] bool enableFootLifting = true;
+    public bool enableFootLifting = true;
     [SerializeField, Range(0, 1)] float smoothRate = 0.5f;
     [Tooltip("The power to snap the body to the ground.")]
     [SerializeField, Range(0, 1.5f)] float adaptiveBodyHeight = 1;
 
     [Tooltip("If disabled, the rotation of the foot will follow animation clips.")]
-    [SerializeField] bool controlRotation = true;
+    public bool controlRotation = true;
     [SerializeField] float footLength = 0.2f;
 
     private CharacterController characterController; // can be replaced with CapsuleCollider
