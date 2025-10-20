@@ -16,5 +16,12 @@
   "author": {
     "name": "James Lee",
     "email": "jameslee911029@gmail.com"
-  }
+  },
+  "samples": [
+        {
+            "displayName": "Sample Usage",
+            "description": "Contains sample scene and characters equipped with various foot IK scripts.",
+            "path": "Samples~"
+        }
+    ]
 }
