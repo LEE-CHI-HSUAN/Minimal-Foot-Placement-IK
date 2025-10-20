@@ -1588,6 +1588,7 @@ MonoBehaviour:
   moveSpeed: 5
   rotationSpeed: 250
   animator: {fileID: 909497460}
+  footIK: {fileID: 909497459}
   inputAction:
     m_Name: Input
     m_Type: 0
