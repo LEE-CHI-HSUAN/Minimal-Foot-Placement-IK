@@ -1,8 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AnimatorIK : BaseFootIK<AvatarIKGoal>
 {
     private Animator animator;
+
+    // access to parameter names of the animator
+    private Dictionary<AvatarIKGoal, string> IKGoal2Str = new()
+    {
+        { AvatarIKGoal.LeftFoot, "LeftIKWeight" },
+        { AvatarIKGoal.RightFoot, "RightIKWeight" },
+    };
 
     void Awake()
     {
@@ -34,8 +42,12 @@ public class AnimatorIK : BaseFootIK<AvatarIKGoal>
         Quaternion IK_rotation = Quaternion.LookRotation(forward, groundNormal);
 
         // call APIs to set the IK target
-        animator.SetIKPositionWeight(foot, 1);
-        animator.SetIKRotationWeight(foot, 1);
+        // // 1. IK always on
+        // animator.SetIKPositionWeight(foot, 1);
+        // animator.SetIKRotationWeight(foot, 1);
+        // 2. adjust IK weight by animation curve in the fbx import settings
+        animator.SetIKPositionWeight(foot, animator.GetFloat(IKGoal2Str[foot]));
+        animator.SetIKRotationWeight(foot, animator.GetFloat(IKGoal2Str[foot]));
         animator.SetIKPosition(foot, IK_position);
         animator.SetIKRotation(foot, IK_rotation);
 
