@@ -18,7 +18,7 @@ namespace Scratch
         public void Init(Quaternion bodyRotation)
         {
             // used to fix the miss alignment of tip and body rotation
-            rotationOffset = Quaternion.RotateTowards(bodyRotation, tip.rotation, Mathf.Infinity);
+            rotationOffset = Quaternion.Inverse(bodyRotation) * tip.rotation;
         }
 
         // try to calculate the inner angle of the root using law of cosines

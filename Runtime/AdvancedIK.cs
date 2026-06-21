@@ -22,6 +22,11 @@ namespace Advanced
         // temporary data
         [HideInInspector] public float groundHeight; // used in body height adjustment
 
+        /// <summary>
+        /// Gets the forward direction of the tip (e.g., foot) in world space,
+        /// aligned with the body's orientation by removing the initial rotation offset.
+        /// This is typically used to determine the foot's facing direction after an animation update.
+        /// </summary>
         public Vector3 TipForward
         {
             get
@@ -41,7 +46,8 @@ namespace Advanced
             c_mul_2 = thighLength * 2;
 
             // used to fix the mis-alignment of tip and body rotation
-            rotationOffset = Quaternion.RotateTowards(bodyRotation, tip.rotation, Mathf.Infinity);
+            // rotationOffset = tip.rotation; // This gives the same outcome, but the intermidiate process is different
+            rotationOffset = Quaternion.Inverse(bodyRotation) * tip.rotation;
 
             // automatic target creation
             smoothedTarget = new GameObject($"{tip.name}_smoothedTarget").transform;
