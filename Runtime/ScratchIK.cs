@@ -4,6 +4,9 @@ using Scratch;
 
 namespace Scratch
 {
+    /// <summary>
+    /// A simple two-bone IK constraint implementation.
+    /// </summary>
     [Serializable]
     public class TwoBoneConstraint
     {
@@ -15,60 +18,67 @@ namespace Scratch
 
         private Quaternion rotationOffset;
 
+        /// <summary> Initializes the constraint with the initial body rotation. </summary>
         public void Init(Quaternion bodyRotation)
         {
-            // used to fix the miss alignment of tip and body rotation
+            // Store the initial rotation offset to maintain consistent alignment
             rotationOffset = Quaternion.Inverse(bodyRotation) * tip.rotation;
         }
 
-        // try to calculate the inner angle of the root using law of cosines
+        /// <summary> Calculates the angle of the root (thigh) using the Law of Cosines. </summary>
         public float GetThighAngle()
         {
-            // variable definition
-            float c = Vector3.Distance(root.position, mid.position); // upper limb
-            float a = Vector3.Distance(mid.position, tip.position); // lower limb
-            float b = Vector3.Distance(root.position, target.position); // root to target
-            if (a + c <= b) // target is unreachable
+            // Calculate lengths of triangle sides
+            float c = Vector3.Distance(root.position, mid.position); // upper limb length
+            float a = Vector3.Distance(mid.position, tip.position); // lower limb length
+            float b = Vector3.Distance(root.position, target.position); // distance from root to target
+
+            // If sum of limb lengths is less than distance to target, the target is unreachable
+            if (a + c <= b)
             {
                 return Mathf.NegativeInfinity;
             }
 
-            // law of cosines
+            // Law of Cosines: c^2 = a^2 + b^2 - 2ab*cos(C)
+            // Rearranged to find angle A (inner angle of root):
+            // cos(A) = (b^2 + c^2 - a^2) / (2bc)
             float angle_A = Mathf.Acos((b * b + c * c - a * a) / (2 * b * c)) * Mathf.Rad2Deg;
             return angle_A;
         }
 
-        // move the limb to the IK target
+        /// <summary> Applies IK to move the limb to the target position and rotation. </summary>
         public void ApplyIK()
         {
-            // try to calculate the inner angle
             float thighAngle = GetThighAngle();
             if (thighAngle == Mathf.NegativeInfinity) // target is unreachable
             {
                 return;
             }
 
-            // calculate the normal vector of the plane spanned by hint, target, root
+            // Calculate rotation axis perpendicular to the plane formed by root, hint, and target
             Vector3 hintDirection = (hint.position - root.position).normalized;
             Vector3 targetDirection = (target.position - root.position).normalized;
             Vector3 rotationAxis = Vector3.Cross(targetDirection, hintDirection);
 
-            // rotate the upper limb
+            // Rotate upper limb
             Vector3 currentThighDirection = (mid.position - root.position).normalized;
             Vector3 newThighDirection = Quaternion.AngleAxis(thighAngle, rotationAxis) * targetDirection;
             root.rotation = Quaternion.FromToRotation(currentThighDirection, newThighDirection) * root.rotation;
 
-            // rotate the lower limb
+            // Rotate lower limb
             Vector3 currentCalfDirection = (tip.position - mid.position).normalized;
             Vector3 newCalfDirection = (target.position - mid.position).normalized;
             mid.rotation = Quaternion.FromToRotation(currentCalfDirection, newCalfDirection) * mid.rotation;
 
-            // rotate the tip corrected by the offset
+            // Apply target rotation corrected by the initial offset
             tip.rotation = target.rotation * rotationOffset;
         }
     }
 }
 
+/// <summary>
+/// Implements foot IK from scratch using a two-bone constraint.
+/// </summary>
 public class ScratchIK : BaseFootIK<TwoBoneConstraint>
 {
     [SerializeField] TwoBoneConstraint leftFootConstraint;
@@ -107,20 +117,20 @@ public class ScratchIK : BaseFootIK<TwoBoneConstraint>
 
     override protected void ResolveIKTarget(TwoBoneConstraint footConstraint)
     {
-        // ground detection using SphereCast
+        // Detect ground beneath the foot
         Vector3 footPosition = footConstraint.tip.position;
         FindGround(footPosition, out Vector3 groundPosition, out Vector3 groundNormal);
 
-        // calculate position
+        // Calculate IK target position
         float verticalOffset = (ankleOffset - sphereRadius) / groundNormal.y;
         Vector3 SphereCenter = groundPosition + sphereRadius * groundNormal;
         Vector3 IK_position = SphereCenter + new Vector3(0, verticalOffset, 0);
 
-        // calculate rotation
+        // Calculate IK target rotation
         Vector3 forward = Vector3.ProjectOnPlane(transform.forward, groundNormal);
         Quaternion IK_rotation = Quaternion.LookRotation(forward, groundNormal);
 
-        // set the IK target
+        // Set the IK target transform
         footConstraint.target.SetPositionAndRotation(IK_position, IK_rotation);
 
 #if UNITY_EDITOR
